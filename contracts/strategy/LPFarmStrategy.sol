@@ -132,7 +132,7 @@ contract LPFarmStrategy is  ReentrancyGuard, Context, Ownable, IStrategy{
         uint256 balanceB =  IERC20(pair.token1()).balanceOf(address(this));
         require(balanceA > 0 || balanceB > 0, "LPFarmStrategy: balanceA and/or balanceB are zero");
         (uint256 reserveA, uint256 reserveB) = getReserves(lptoken);
-        uint256 timesOfA = reserveB * balanceB / reserveA; //
+        uint256 timesOfA = reserveA > reserveB ? reserveA * balanceA / reserveB : reserveB * balanceB / reserveA; //
         if(balanceA > timesOfA + swapLimit) {
             address[] memory path = new address[](2);
             path[0] = pair.token0();
