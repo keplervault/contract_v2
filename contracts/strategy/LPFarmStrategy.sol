@@ -106,7 +106,7 @@ contract LPFarmStrategy is  ReentrancyGuard, Context, Ownable, IStrategy{
             require(balanceB > amountBOptimal, "amountBOptimal value too large");
             uint256 swapAmount = (balanceB - amountBOptimal) / 2;
             IPancakeRouter(router).swapExactTokensForTokensSupportingFeeOnTransferTokens(swapAmount, 1,path, address(this), block.timestamp + waitTime);
-        } else {
+        } else if(token == pair.token1()) {
             address[] memory path = new address[](2);
             path[0] = pair.token0();
             path[1] = pair.token1();
