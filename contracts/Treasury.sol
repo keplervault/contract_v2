@@ -82,11 +82,11 @@ contract Treasury is Ownable, ReentrancyGuard {
 
         uint256 quantity = (_amount * 99) / 100;
         uint256 lpAmount = IStrategy(lpStrategy).totalAmount();
-        uint256 leavePercent = (_amount * lpAmount) / totalAmount;
+        uint256 leaveAmount = (_amount * lpAmount) / totalAmount;
         _accounts[msg.sender].amount -= _amount;
         totalAmount -= _amount;
 
-        IStrategy(lpStrategy).withdrawToDispatcher(leavePercent, tetherToken);
+        IStrategy(lpStrategy).withdrawToDispatcher(leaveAmount, tetherToken);
         IERC20(tetherToken).safeTransfer(msg.sender, quantity);
         emit Withdraw(msg.sender, _amount, quantity);
     }
@@ -150,7 +150,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         require(_orders[_orderId].isFinish == false, "order already finished");
         require(_orders[_orderId].timeOfEnd > block.timestamp, "Order already expired");
         require(_orders[_orderId].amount > 0, "Invalid amount");
-        require(_orders[_orderId].day <= _day, "extend day must large create day");
+        require(_orders[_orderId].day <= _day, "_day must be larger than current order day");
         _orders[_orderId].timeOfStart = block.timestamp;
         _orders[_orderId].timeOfEnd = block.timestamp + _day * 1 days;
         _orders[_orderId].day = _day;
