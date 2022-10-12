@@ -128,36 +128,9 @@ contract LPFarmStrategy is  ReentrancyGuard, Context, Ownable, IStrategy{
     // Call initApprove before calling
     function executeStrategy() external override onlyDispatcher nonReentrant{
         IPancakePair pair = IPancakePair(lptoken);
-        uint256 balanceA =  IERC20(pair.token0()).balanceOf(address(this));
-        uint256 balanceB =  IERC20(pair.token1()).balanceOf(address(this));
+        uint256 balanceA = IERC20(pair.token0()).balanceOf(address(this));
+        uint256 balanceB = IERC20(pair.token1()).balanceOf(address(this));
         require(balanceA > 0 || balanceB > 0, "LPFarmStrategy: balanceA and/or balanceB are zero");
-        (uint256 reserveA, uint256 reserveB) = getReserves(lptoken);
-        uint256 timesOfA = reserveA > reserveB ? reserveA * balanceA / reserveB : reserveB * balanceB / reserveA; //
-        if(balanceA > timesOfA + swapLimit) {
-            address[] memory path = new address[](2);
-            path[0] = pair.token0();
-            path[1] = pair.token1();
-            uint256 amountAOptimal =0;
-            if ( balanceB > 0 ) {
-                amountAOptimal = quote(balanceB, reserveB, reserveA);
-            }
-            require(balanceA > amountAOptimal, "amountAOptimal value too large");
-            uint256 swapAmount = (balanceA - amountAOptimal) / 2;
-            IPancakeRouter(router).swapExactTokensForTokensSupportingFeeOnTransferTokens(swapAmount, 1,path, address(this), block.timestamp + waitTime);
-        } else if(timesOfA > balanceA + swapLimit) {
-            address[] memory path = new address[](2);
-            path[0] = pair.token1();
-            path[1] = pair.token0();
-            uint256 amountBOptimal = 0;
-            if ( balanceA > 0 ) {
-                amountBOptimal = quote(balanceA, reserveA, reserveB);
-            }
-            require(balanceB > amountBOptimal, "amountBOptimal value too large");
-            uint256 swapAmount = (balanceB - amountBOptimal) / 2;
-            IPancakeRouter(router).swapExactTokensForTokensSupportingFeeOnTransferTokens(swapAmount, 1,path, address(this), block.timestamp + waitTime);
-        }
-        balanceA = IERC20(pair.token0()).balanceOf(address(this));
-        balanceB = IERC20(pair.token1()).balanceOf(address(this));
         IPancakeRouter(router).addLiquidity(pair.token0(), pair.token1(), balanceA, balanceB, 1, 1, address(this), block.timestamp + waitTime);
         IPancakeFarm(farm).deposit(poolId, pair.balanceOf(address(this)));
     }
